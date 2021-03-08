@@ -6,47 +6,26 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.OrientationHelper
 import com.base.architecture.R
 import com.base.architecture.databinding.RecipeListFragmentBinding
 import com.base.architecture.model.Recipe
-import com.base.architecture.repository.Result
 import com.base.architecture.ui.recipe_cart.RecipeCartFragment
-import com.base.architecture.util.Status
+import com.base.architecture.util.network.ResponseHandler
+import com.mindorks.bootcamp.instagram.ui.base.BaseFragment
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
-import javax.inject.Inject
 
 @AndroidEntryPoint
-class RecipeListFragment : Fragment(), OnRowClick {
+class RecipeListFragment : BaseFragment<RecipeListFragmentBinding, RecipeListViewModel>(),
+    OnRowClick {
 
-    companion object {
-        fun newInstance() = RecipeListFragment()
-    }
-
-    private var _binding: RecipeListFragmentBinding? = null
-
-    private val binding get() = _binding!!
-    val viewModel: RecipeListViewModel by viewModels()
     private lateinit var adapter: RecipeListAdapter
 
     private var cartList = mutableListOf<Recipe>()
 
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = RecipeListFragmentBinding.inflate(inflater, container, false)
-        return binding.root
-    }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -66,51 +45,48 @@ class RecipeListFragment : Fragment(), OnRowClick {
             val recipeCartFragment = RecipeCartFragment()
             recipeCartFragment.arguments = bundle
             activity?.supportFragmentManager?.beginTransaction()
-                ?.replace(R.id.container, RecipeCartFragment(), "")
+                ?.replace(R.id.navMainContainer, RecipeCartFragment(), "")
                 ?.addToBackStack(null)
                 ?.commit()
+
         }
 
         viewModel.getRecipeList().observe(viewLifecycleOwner, Observer {
             it?.let { result ->
-                when (result) {
-                    is Result.success -> {
-                        result.data?.let {
-                            showRecipes(it)
-                        }
-                    }
-                    is Result.failure -> {
-                       Toast.makeText(activity, result.exception.message , Toast.LENGTH_LONG).show()
+//                when (result) {
+//                    is Result.success -> {
+//                        result.data?.let {
+//                            showRecipes(it)
+//                        }
+//                    }
+//                    is Result.failure -> {
+//                       Toast.makeText(activity, result.exception.message , Toast.LENGTH_LONG).show()
+//                    }
+//
+//                    is Result.Loading -> {
+//                        Toast.makeText(activity, "loading", Toast.LENGTH_LONG).show()
+//                    }
+//
+//                    else -> {
+//
+//                    }
+//                }
+//            ResponseHandler<List<Recipe>>(result = result,null,null)
+
+                object : ResponseHandler<List<Recipe>>(
+                    result = result,
+                    mContext,
+                    viewModel = viewModel
+                ) {
+                    override fun onSuccess(data: List<Recipe>) {
+                        showRecipes(data)
                     }
 
-                    is Result.Loading -> {
-                        Toast.makeText(activity, "loading", Toast.LENGTH_LONG).show()
-                    }
-
-                    else -> {
-
-                    }
                 }
 
             }
         })
     }
-//    resource ->
-//                when (Result.success()) {
-//                    Status.Success -> {
-//
-//                       resource.data.let {
-//
-//                       }
-//                    }
-//                    Status.Error -> {
-//
-//                        Toast.makeText(activity, it.message, Toast.LENGTH_LONG).show()
-//                    }
-//                    Status.Loading -> {
-//                        Toast.makeText(activity, "loading", Toast.LENGTH_LONG).show()
-//                    }
-//                }
 
     override fun onResume() {
         super.onResume()
@@ -132,9 +108,12 @@ class RecipeListFragment : Fragment(), OnRowClick {
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+
+    override fun setupView(view: View) {
+
     }
+
+    override val bindingInflater: (LayoutInflater, ViewGroup?, Boolean) -> RecipeListFragmentBinding
+        get() = RecipeListFragmentBinding::inflate
 
 }

@@ -17,6 +17,7 @@ import javax.inject.Singleton
 object RetrofitModule {
 
 
+
     @Singleton
     @Provides
     fun getDebugOkHttpClient(): OkHttpClient {

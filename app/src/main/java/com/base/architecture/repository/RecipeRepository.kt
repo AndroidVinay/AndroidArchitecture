@@ -4,9 +4,11 @@ import com.base.architecture.api.ApiService
 import com.base.architecture.local.RecipeDao
 import com.base.architecture.model.Recipe
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
@@ -39,22 +41,22 @@ class RecipeRepository @Inject constructor(val apiService: ApiService, val recip
 //
 //    }
 
-//    fun getRecipes(): Flow<Result<List<Recipe>?>> = flow {
-//
-//        emit(Result.Loading(true))
-//
-//        emit(safeApiCall(Dispatchers.IO, apiCall = {
-//            apiService.getRecipes();
-//        }))
-//
-//    }
-
-
     fun getRecipes(): Flow<Result<List<Recipe>?>> = flow {
 
-        emit(safeDBCall(Dispatchers.IO, apiCall = {
-            recipeDao.get()
+        emit(Result.Loading(true))
+
+        emit(safeApiCall(Dispatchers.IO, apiCall = {
+            apiService.getRecipes();
         }))
 
     }
+
+
+//    fun getRecipes(): Flow<Result<List<Recipe>?>> = flow {
+//
+//        emit(safeDBCall(Dispatchers.IO, apiCall = {
+//            recipeDao.get()
+//        }))
+//
+//    }
 }

@@ -2,23 +2,30 @@ package com.base.architecture.ui.recipe_list
 
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import androidx.lifecycle.liveData
 import com.base.architecture.model.Recipe
 import com.base.architecture.repository.RecipeRepository
 import com.base.architecture.repository.Result
-import com.base.architecture.util.Resource
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
+import com.mindorks.bootcamp.instagram.ui.base.BaseViewModel
+import com.mindorks.bootcamp.instagram.utils.network.NetworkHelper
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
+@HiltViewModel
+class RecipeListViewModel @Inject constructor(
+    val repository: RecipeRepository,
+    networkHelper: NetworkHelper
+) :
+    BaseViewModel(networkHelper) {
 
-class RecipeListViewModel @ViewModelInject constructor(val repository: RecipeRepository) :
-    ViewModel() {
-
-   fun getRecipeList(): LiveData<Result<List<Recipe>?>> {
+    fun getRecipeList(): LiveData<Result<List<Recipe>?>> {
         return repository.getRecipes().asLiveData()
     }
+
+    override fun onCreate() {
+    }
+
+
 }
 
 
